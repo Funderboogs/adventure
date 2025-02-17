@@ -2,6 +2,10 @@ objects:
   theKey:
     name: a brass key
     description: A small brass key with intricate designs on it.
+commodities:
+  money:
+    name: monies
+    description: How you pay for things
 achievements: {}
 start_scene: theRoom
 character:
@@ -9,16 +13,37 @@ character:
     intelligence: 100
   inventory: []
   achievements: []
+  commodities:
+    money: 17
 scenes:
+  theHint:
+    description: |
+      You should pick up the key.
+    menu:
+      GoBack:
+        description: Try it out.
+        next_scene: theRoom
   theRoom:
     description: |
       You are in a small room with a door to the north.
+
+      You have {{commodities.money}} monies.
       
       {%- if not inventory is containing("theKey") %}
 
       There is a key on the ground.
       {%- endif %}
     menu:
+      GetHint:
+        test:
+          commodity_greater:
+            - money
+            - 5
+        description: Get a hint for five moneys.
+        action: !AddCommodity
+          - money
+          - -5
+        next_scene: theHint
       TryLockedDoor:
         test: 
           not:

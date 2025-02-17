@@ -1,106 +1,10 @@
+mod test;
+mod action;
+use test::Test;
+use action::Action;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::collections::{HashMap,HashSet};
-
-#[derive(Deserialize,Serialize)]
-pub struct Test {
-    pub stat_greater: Option<(String, f32)>,
-    pub stat_less: Option<(String, f32)>,
-    pub inventory_contains: Option<ObjectIdentifier>,
-    pub achievement_earned: Option<AchievementIdentifier>,
-    pub not: Option<Box<Test>>,
-    pub and: Option<(Box<Test>, Box<Test>)>,
-    pub or: Option<(Box<Test>, Box<Test>)>,
-    pub any: Option<Vec<Test>>,
-    pub all: Option<Vec<Test>>,
-    pub none: Option<Vec<Test>>,
-}
-
-impl std::fmt::Debug for Test {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Test { stat_greater: Some((stat, value)), .. } => write!(f, "{} > {}", stat, value),
-            Test { stat_less: Some((stat, value)), .. } => write!(f, "{} < {}", stat, value),
-            Test { inventory_contains: Some(object), .. } => write!(f, "inventory contains {:?}", object),
-            Test { achievement_earned: Some(achievement), .. } => write!(f, "earned {:?}", achievement),
-            Test { not: Some(test), .. } => write!(f, "not {:?}", test),
-            Test { and: Some((test1, test2)), .. } => write!(f, "{:?} and {:?}", test1, test2),
-            Test { or: Some((test1, test2)), .. } => write!(f, "{:?} or {:?}", test1, test2),
-            Test { any: Some(tests), .. } => write!(f, "any of {:?} is true", tests),
-            Test { all: Some(tests), .. } => write!(f, "all of {:?} are true", tests),
-            Test { none: Some(tests), .. } => write!(f, "none of {:?} are true", tests),
-            _ => write!(f, "no test defined"),
-        }
-    }
-}
-
-impl Test {
-    pub fn test(&self, character: &Character) -> bool {
-        match self {
-            Test { stat_greater: Some((stat, value)), .. } => {
-                let ret = character.stats.get(stat).is_some_and(|v| v > value);
-                log::debug!("Testing {} > {} = {}", stat, value, ret);
-                ret
-            }
-            Test { stat_less: Some((stat, value)), .. } => character.stats.get(stat).is_some_and(|v| v < value),
-            Test { inventory_contains: Some(object), .. } => {
-                let ret = character.inventory.contains(object);
-                log::debug!("Testing inventory contains {:?} = {}", object, ret);
-                ret
-            }
-            Test { achievement_earned: Some(achievement), .. } => character.achievements.contains(achievement),
-            Test { not: Some(test), .. } => {
-                let ret = !test.test(character);
-                log::debug!("Testing not {:?} = {}", test, ret);
-                ret
-            }
-            Test { and: Some((test1, test2)), .. } => test1.test(character) && test2.test(character),
-            Test { or: Some((test1, test2)), .. } => test1.test(character) || test2.test(character),
-            Test { any: Some(tests), .. } => tests.iter().any(|test| test.test(character)),
-            Test { all: Some(tests), .. } => tests.iter().all(|test| test.test(character)),
-            Test { none: Some(tests), .. } => tests.iter().all(|test| !test.test(character)),
-            _ => false,
-        }
-    }
-}
-
-#[derive(Debug,Deserialize,Serialize,Default)]
-pub enum Action {
-    #[default]
-    None,
-    AddStat(String, f32),
-    AddToInventory(ObjectIdentifier),
-    AddAchievement(AchievementIdentifier),
-    Win,
-    Lose,
-}
-
-impl Action {
-    pub fn act(&self, character: &mut Character) {
-        log::debug!("Acting on character with {:?}", self);
-        match self {
-            Action::None => {}
-            Action::AddStat(stat, value) => {
-                let stat_value = character.stats.entry(stat.clone()).or_insert(0.0);
-                *stat_value += value;
-            }
-            Action::AddToInventory(object) => {
-                log::debug!("Adding object {:?}", object);
-                character.inventory.insert(object.clone());
-            }
-            Action::AddAchievement(achievement) => {
-                character.achievements.insert(achievement.clone());
-            }
-            Action::Win => {
-                character.state = State::Won;
-            }
-            Action::Lose => {
-                character.state = State::Lost;
-            }
-        }
-    }
-}
-
 #[derive(Debug,Deserialize,Serialize,Clone)]
 pub struct Identifier(String);
 
@@ -137,6 +41,7 @@ impl std::hash::Hash for Identifier {
     }
 }
 pub type ObjectIdentifier = Identifier;
+pub type CommodityIdentifier = Identifier;
 pub type AchievementIdentifier = Identifier;
 pub type SceneIdentifier = Identifier;
 pub type MenuItemIdentifier = Identifier;
@@ -153,6 +58,12 @@ pub struct Achievement {
     pub description: String,
 }
 
+#[derive(Debug,Deserialize,Serialize)]
+pub struct Commodity {
+    pub name: String,
+    pub description: String,
+}
+
 #[derive(Debug,Deserialize,Serialize,Clone,PartialEq,Eq,Hash,Default)]
 pub enum State {
     #[default]
@@ -163,9 +74,14 @@ pub enum State {
 
 #[derive(Debug,Deserialize,Serialize,Clone)]
 pub struct Character {
+    #[serde(default)]
     pub stats: HashMap<String, f32>,
+    #[serde(default)]
     pub inventory: HashSet<ObjectIdentifier>,
+    #[serde(default)]
     pub achievements: HashSet<AchievementIdentifier>,
+    #[serde(default)]
+    pub commodities: HashMap<CommodityIdentifier, u32>,
     #[serde(default)]
     pub state: State,
 }
@@ -195,7 +111,11 @@ impl Scene {
 
 #[derive(Debug,Deserialize,Serialize)]
 pub struct Game {
+    #[serde(default)]
     pub objects: HashMap<ObjectIdentifier, Object>,
+    #[serde(default)]
+    pub commodities: HashMap<CommodityIdentifier, Commodity>,
+    #[serde(default)]
     pub achievements: HashMap<AchievementIdentifier, Achievement>,
     pub character: Character,
     pub scenes: HashMap<SceneIdentifier, Scene>,
@@ -249,7 +169,7 @@ impl Game {
         view: &mut SceneView) -> Result<bool, Box<dyn Error>> {
 
         let scene = self.scenes.get(&progress.scene).ok_or("Scene not found")?;
-        let menu_item = scene.menu.get(choice).ok_or_else(|| format!("Menu item not {:?} found", choice))?;
+        let menu_item = scene.menu.get(choice).ok_or_else(|| format!("Menu item {:?} not found", choice))?;
         menu_item.action.act(&mut progress.character);
         if progress.character.state != State::Playing {
             return Ok(false);
