@@ -2,13 +2,24 @@ locations:
   theRoom:
     name: A Room
     description: |
-      You are in a small room with a door to the north.
+      You are in a small room with a flickering, fluorescent light. The walls are painted a sickly green, and the floor is covered in a dirty, threadbare carpet.
+
+      On the East wall, there is a rosette window from an old church. It depicts a saint with a halo, holding a key.
     caches:
       floor:
         objects:
           theKey:
             name: a key
-            description: an ordinary brass key.
+            description: an ordinary brass key
+          aToy:
+            name: a toy
+            description: a plastic ice cream cone with a foam ball
+          aSock:
+            name: a sock
+            description: a dirty sock
+          aPencil:
+            name: a pencil
+            description: a yellow pencil
 start_scene: theRoom
 character:
   stats:
@@ -31,12 +42,21 @@ scenes:
       
       {{ location.description }}
 
-      You have {{character.inventory.commodities.money}} monies.
+      You have {{inventory.commodities.money}} monies.
 
-      {%- for id, item in caches.floor.objects %}
+      {%- for id, item in floor.objects %}
       {%- if loop.first %}
 
       On the floor, there is 
+      {%- elif loop.last %}, and
+      {%- else %},
+      {%- endif %} {{ item.description }}
+      {%- endfor %}.
+
+      {%- for id, item in inventory.objects %}
+      {%- if loop.first %}
+
+      In your hand, you have
       {%- elif loop.last %}, and
       {%- else %},
       {%- endif %} {{ item.description }}
@@ -55,8 +75,12 @@ scenes:
         next_scene: theHint
       TryLockedDoor:
         test: 
-          not:
-            inventory_contains: theKey
+          and:
+            - stat_greater:
+                - intelligence
+                - 40
+            - not:
+                inventory_contains: theKey
         description: Try the door.
         actions:
           - !AddStat
@@ -80,10 +104,10 @@ scenes:
           - !TakeObject ["theRoom", "floor", "theKey"]
   winnningRoom:
     description: |
-      {% if character.achievements is containing("unlockedDoor") %}You unlock the door.{% endif %}
+      {% if achievements is containing("unlockedDoor") %}You unlock the door.{% endif %}
 
       You have won the game
-      {%- if character.stats.intelligence > 70 %}!
+      {%- if stats.intelligence > 70 %}!
       {%- else %}... barely.
       {%- endif %}
     menu: 

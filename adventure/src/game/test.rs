@@ -68,7 +68,12 @@ impl Test {
                 log::debug!("Testing not {:?} = {}", test, ret);
                 ret
             }
-            Test { and: Some((test1, test2)), .. } => test1.test(character) && test2.test(character),
+            Test { and: Some((test1, test2)), .. } => {
+                let ret1 = test1.test(character);
+                let ret2 = test2.test(character);
+                log::debug!("Testing {:?} ({:?}) and {:?} ({:?}) = {}", test1, ret1, test2, ret2, ret1&&ret2);
+                ret1 && ret2
+            },
             Test { or: Some((test1, test2)), .. } => test1.test(character) || test2.test(character),
             Test { any: Some(tests), .. } => tests.iter().any(|test| test.test(character)),
             Test { all: Some(tests), .. } => tests.iter().all(|test| test.test(character)),

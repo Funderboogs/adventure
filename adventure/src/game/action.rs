@@ -29,7 +29,9 @@ impl Action {
             Action::None => true,
             Action::Quit => false,
             Action::AddStat(stat, value) => {
-                progress.character.stats.insert(stat.clone(), *value);
+                let val = progress.character.stats.get_mut(stat).unwrap();
+                *val += value;
+
                 true
             },
             Action::TakeObject(location, cache, object) => {

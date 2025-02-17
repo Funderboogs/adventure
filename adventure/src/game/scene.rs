@@ -54,7 +54,13 @@ impl Scene {
             Some(caches) => caches,
             None => &HashMap::new(),
         };
-        let context = tera::Context::from_serialize(
+        let mut context = tera::Context::new();
+        if !caches.is_empty() {
+            context.extend(tera::Context::from_serialize(caches).unwrap());
+        }
+        context.extend(tera::Context::from_serialize(self).unwrap());
+        context.extend(tera::Context::from_serialize(&progress.character).unwrap());
+        context.extend(tera::Context::from_serialize(
             RenderContext {
                 character: &progress.character,
                 scene: self,
@@ -63,7 +69,7 @@ impl Scene {
                 progress,
                 game,
             }
-        ).unwrap();
+        ).unwrap());
         renderer.render_str(&self.description, &context)
     }
 }
