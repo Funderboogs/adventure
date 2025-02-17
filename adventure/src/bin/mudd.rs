@@ -1,4 +1,4 @@
-use adventure::{Game,ConsoleDriver,Driver};
+use adventure::{Game,TextDriver,ConsoleDriver,Driver};
 use clap::Parser;
 use std::path::PathBuf;
 
@@ -24,9 +24,14 @@ fn main() {
     if let Some(game_yaml) = args.game_yaml {
         let file = std::fs::File::open(game_yaml).expect("Failed to open game file");
         let game = Game::from_yaml(file).expect("Failed to load game");
-        // let mut driver = TextDriver::new(&game);
-        let mut driver = ConsoleDriver::new(&game);
-        driver.drive().expect("Failed to run game");
+        if args.debug {
+            let mut driver = TextDriver::new(&game);
+            log::debug!("{:?}", game);
+            driver.drive().expect("Failed to run game");
+        } else {
+            let mut driver = ConsoleDriver::new(&game);
+            driver.drive().expect("Failed to run game");
+        }
     } else {
         eprintln!("No game file provided");
     }
