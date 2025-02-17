@@ -4,3 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4.5.29", features = ["derive"] }
+colog = "1.3.0"
+cursive = { version = "0.21.1", features = ["crossterm-backend"] }
+log = "0.4.25"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_yaml = "0.9.34"

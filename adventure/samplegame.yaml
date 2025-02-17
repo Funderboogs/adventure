@@ -1,0 +1,41 @@
+objects:
+  theKey:
+    name: a brass key
+    description: A small brass key with intricate designs on it.
+achievements: {}
+start_scene: theRoom
+character:
+  stats:
+    health: 100
+    attack: 10
+    defense: 5
+  inventory: []
+  achievements: []
+scenes:
+  theRoom:
+    description: |
+      You are in a small room with a door to the north.
+
+      There is a key on the ground.
+    menu:
+      TryDoorLocked:
+        test: 
+          not:
+            inventory_contains: theKey
+        description: Try the door.
+        next_scene: theRoom
+      PickUpKey:
+        test: 
+          not:
+            inventory_contains: theKey
+        description: Pick up the key.
+        next_scene: theRoom
+        action: !AddToInventory theKey
+      TryDoorUnlocked:
+        test: 
+          inventory_contains: theKey
+        description: Try the door.
+        action: !Win
+        next_scene: theRoom
+
+
