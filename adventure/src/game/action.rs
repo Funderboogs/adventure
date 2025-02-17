@@ -2,52 +2,64 @@ use serde::{Deserialize, Serialize};
 use crate::game::{
     ObjectIdentifier,
     AchievementIdentifier,
-    Character,
-    State,
     CommodityIdentifier,
+    cache::CacheIdentifier,
+    location::LocationIdentifier,
+    progress::Progress,
 };
-#[derive(Debug,Deserialize,Serialize,Default)]
+#[derive(Debug,Deserialize,Serialize,Default,PartialEq)]
 pub enum Action {
     #[default]
     None,
     AddStat(String, f32),
-    AddToInventory(ObjectIdentifier),
-    AddCommodity(CommodityIdentifier, i32),
+    TakeObject(LocationIdentifier, CacheIdentifier, ObjectIdentifier),
+    PlaceObject(LocationIdentifier, CacheIdentifier, ObjectIdentifier),
+    TakeCommodity(LocationIdentifier, CacheIdentifier, CommodityIdentifier, i32),
+    UseCommodity(CommodityIdentifier, i32),
+    PlaceCommodity(LocationIdentifier, CacheIdentifier, CommodityIdentifier, i32),
     AddAchievement(AchievementIdentifier),
     Win,
     Lose,
+    Quit,
 }
 
 impl Action {
-    pub fn act(&self, character: &mut Character) {
-        log::debug!("Acting on character with {:?}", self);
+    pub fn act(&self, progress: &mut Progress) -> bool {
         match self {
-            Action::None => {}
+            Action::None => true,
+            Action::Quit => false,
             Action::AddStat(stat, value) => {
-                let stat_value = character.stats.entry(stat.clone()).or_insert(0.0);
-                *stat_value += value;
-            }
-            Action::AddToInventory(object) => {
-                log::debug!("Adding object {:?}", object);
-                character.inventory.insert(object.clone());
-            }
-            Action::AddCommodity(commodity, amount) => {
-                let commodity_amount = character.commodities.entry(commodity.clone()).or_insert(0);
-                if *amount < 0 {
-                    *commodity_amount -= amount.unsigned_abs();
-                } else {
-                    *commodity_amount += *amount as u32;
-                }
-            }
+                progress.character.stats.insert(stat.clone(), *value);
+                true
+            },
+            Action::TakeObject(location, cache, object) => {
+                log::debug!("Taking object {:?} from cache {:?} at location {:?}", object, cache, location);
+                progress.take_object(location, cache, object)
+            },
+            Action::PlaceObject(location, cache, object) => {
+                progress.place_object(location, cache, object)
+            },
+            Action::TakeCommodity(location, cache, commodity, count) => {
+                progress.take_commodity(location, cache, commodity, *count)
+            },
+            Action::PlaceCommodity(location, cache, commodity, count) => {
+                progress.place_commodity(location, cache, commodity, *count)
+            },
+            Action::UseCommodity(commodity, count) => {
+                progress.character.inventory.remove_commodity(commodity, *count)
+            },
             Action::AddAchievement(achievement) => {
-                character.achievements.insert(achievement.clone());
-            }
+                progress.character.achievements.insert(achievement.clone());
+                true
+            },
             Action::Win => {
-                character.state = State::Won;
-            }
+                progress.character.state = crate::game::State::Won;
+                true
+            },
             Action::Lose => {
-                character.state = State::Lost;
-            }
+                progress.character.state = crate::game::State::Lost;
+                true
+            },
         }
     }
 }

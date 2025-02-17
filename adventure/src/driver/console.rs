@@ -2,12 +2,12 @@ use std::error::Error;
 use crate::driver::Driver;
 use crate::game::{
     Game,
-    Progress,
-    SceneIdentifier,
-    Character,
+    progress::Progress,
     State,
-    MenuItemIdentifier,
-    SceneView,
+    scene::{
+        MenuItemIdentifier,
+        SceneView,
+    },
 };
 use cursive::{
     views::{
@@ -22,7 +22,7 @@ use cursive::{
     },
     Cursive, CursiveExt,
 };
-use std::collections::{HashMap,HashSet};
+use std::collections::HashMap;
 pub struct ConsoleDriver<'game> {
     pub progress: Progress,
     sui: Cursive,
@@ -32,16 +32,7 @@ pub struct ConsoleDriver<'game> {
 impl<'game> ConsoleDriver<'game> {
     pub fn new(game: &'game Game) -> Self {
         ConsoleDriver {
-            progress: Progress {
-                scene: SceneIdentifier::empty(),
-                character: Character {
-                    stats: HashMap::new(),
-                    inventory: HashSet::new(),
-                    achievements: HashSet::new(),
-                    commodities: HashMap::new(),
-                    state: State::Playing,
-                },
-            },
+            progress: Progress::new(game),
             sui: Cursive::default(),
             game,
         }
@@ -81,9 +72,9 @@ impl<'game> ConsoleDriver<'game> {
         for (id, description) in &view.menu {
             select.add_item(description, id.clone());
         }
-        select.add_item("Quit", MenuItemIdentifier::from_string("__QUIT"));
-        select.set_on_submit(|s, choice| {
-            if *choice != "__QUIT" {
+        select.add_item("Quit", MenuItemIdentifier::from("__QUIT".to_string()));
+        select.set_on_submit(|s: &mut Cursive, choice: &MenuItemIdentifier| {
+            if choice != "__QUIT" {
                 s.set_user_data(choice.clone());
             }
             s.quit();

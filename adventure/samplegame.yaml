@@ -1,20 +1,21 @@
-objects:
-  theKey:
-    name: a brass key
-    description: A small brass key with intricate designs on it.
-commodities:
-  money:
-    name: monies
-    description: How you pay for things
-achievements: {}
+locations:
+  theRoom:
+    name: A Room
+    description: |
+      You are in a small room with a door to the north.
+    caches:
+      floor:
+        objects:
+          theKey:
+            name: a key
+            description: an ordinary brass key.
 start_scene: theRoom
 character:
   stats:
     intelligence: 100
-  inventory: []
-  achievements: []
-  commodities:
-    money: 17
+  inventory:
+    commodities:
+      money: 17
 scenes:
   theHint:
     description: |
@@ -24,15 +25,22 @@ scenes:
         description: Try it out.
         next_scene: theRoom
   theRoom:
+    location: theRoom
     description: |
-      You are in a small room with a door to the north.
-
-      You have {{commodities.money}} monies.
+      # You Are In {{ location.name }}
       
-      {%- if not inventory is containing("theKey") %}
+      {{ location.description }}
 
-      There is a key on the ground.
-      {%- endif %}
+      You have {{character.inventory.commodities.money}} monies.
+
+      {%- for id, item in caches.floor.objects %}
+      {%- if loop.first %}
+
+      On the floor, there is 
+      {%- elif loop.last %}, and
+      {%- else %},
+      {%- endif %} {{ item.description }}
+      {%- endfor %}.
     menu:
       GetHint:
         test:
@@ -40,24 +48,27 @@ scenes:
             - money
             - 5
         description: Get a hint for five moneys.
-        action: !AddCommodity
-          - money
-          - -5
+        actions:
+          - !UseCommodity
+            - money
+            - 5
         next_scene: theHint
       TryLockedDoor:
         test: 
           not:
             inventory_contains: theKey
         description: Try the door.
-        action: !AddStat
-          - intelligence
-          - -10
+        actions:
+          - !AddStat
+            - intelligence
+            - -10
         next_scene: theRoom
       TryUnlockedDoor:
         test: 
           inventory_contains: theKey
         description: Try the door.
-        action: !AddAchievement unlockedDoor
+        actions:
+          - !AddAchievement unlockedDoor
         next_scene: winnningRoom
       PickUpKey:
         test: 
@@ -65,18 +76,21 @@ scenes:
             inventory_contains: theKey
         description: Pick up the key.
         next_scene: theRoom
-        action: !AddToInventory theKey
+        actions:
+          - !TakeObject ["theRoom", "floor", "theKey"]
   winnningRoom:
     description: |
-      {% if achievements is containing("unlockedDoor") %}You unlock the door.{% endif %}
+      {% if character.achievements is containing("unlockedDoor") %}You unlock the door.{% endif %}
 
       You have won the game
-      {%- if stats.intelligence > 70 %}!
+      {%- if character.stats.intelligence > 70 %}!
       {%- else %}... barely.
       {%- endif %}
     menu: 
       Quit:
         description: Quit the game.
-        action: !Win
+        actions:
+          - !Win
+          - !Quit
         next_scene: winnningRoom
 

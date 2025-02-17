@@ -1,14 +1,14 @@
-use std::collections::{HashMap,HashSet};
+use std::collections::HashMap;
 use std::error::Error;
 use crate::driver::Driver;
 use crate::game::{
     Game,
-    Progress,
-    SceneIdentifier,
-    Character,
+    progress::Progress,
+    scene::{
+        MenuItemIdentifier,
+        SceneView,
+    },
     State,
-    MenuItemIdentifier,
-    SceneView,
 };
 
 pub struct TextDriver<'game> {
@@ -19,16 +19,7 @@ pub struct TextDriver<'game> {
 impl<'game> TextDriver<'game> {
     pub fn new(game: &'game Game) -> Self {
         TextDriver {
-            progress: Progress {
-                scene: SceneIdentifier::empty(),
-                character: Character {
-                    stats: HashMap::new(),
-                    inventory: HashSet::new(),
-                    achievements: HashSet::new(),
-                    commodities: HashMap::new(),
-                    state: State::Playing,
-                },
-            },
+            progress: Progress::new(game),
             game,
         }
     }
@@ -44,8 +35,8 @@ impl<'game> TextDriver<'game> {
         let choice = choice.trim();
         if choice.is_empty() || choice == "__QUIT" {
             None
-        } else if view.menu.contains_key(&MenuItemIdentifier::from_string(choice)) {
-            Some(MenuItemIdentifier::from_string(choice))
+        } else if view.menu.contains_key(&MenuItemIdentifier::from(choice)) {
+            Some(MenuItemIdentifier::from(choice))
         } else {
             println!("Invalid choice");
             Self::get_choice(view)

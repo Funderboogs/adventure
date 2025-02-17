@@ -52,13 +52,13 @@ impl Test {
             }
             Test { stat_less: Some((stat, value)), .. } => character.stats.get(stat).is_some_and(|v| v < value),
             Test { commodity_greater: Some((commodity, value)), .. } => {
-                let ret = character.commodities.get(commodity).is_some_and(|v| v > value);
+                let ret = character.inventory.commodities.get(commodity).is_some_and(|v| v > value);
                 log::debug!("Testing {:?} > {} = {}", commodity, value, ret);
                 ret
             }
-            Test { commodity_less: Some((commodity, value)), .. } => character.commodities.get(commodity).is_some_and(|v| v < value),
+            Test { commodity_less: Some((commodity, value)), .. } => character.inventory.commodities.get(commodity).is_some_and(|v| v < value),
             Test { inventory_contains: Some(object), .. } => {
-                let ret = character.inventory.contains(object);
+                let ret = character.inventory.objects.contains_key(object);
                 log::debug!("Testing inventory contains {:?} = {}", object, ret);
                 ret
             }
