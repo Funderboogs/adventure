@@ -10,3 +10,4 @@ cursive = { version = "0.21.1", features = ["crossterm-backend"] }
 log = "0.4.25"
 serde = { version = "1.0.217", features = ["derive"] }
 serde_yaml = "0.9.34"
+tera = "1.20.0"

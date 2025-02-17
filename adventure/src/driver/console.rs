@@ -18,6 +18,7 @@ use cursive::{
         ScrollView,
         Dialog,
         DummyView,
+        Panel,
     },
     Cursive, CursiveExt,
 };
@@ -51,16 +52,21 @@ impl<'game> ConsoleDriver<'game> {
         );
         self.sui.add_layer(
             LinearLayout::vertical()
-                .child(
+            .child(
+                Panel::new(
                     ScrollView::new(
                         TextView::new(view.description.clone()),
                     ),
-                )
-                .child(
-                    Button::new("OK", |s| {
-                        s.quit();
-                    }),
                 ),
+            )
+            .child(
+                DummyView::new(),
+            )
+            .child(
+                Button::new("OK", |s| {
+                    s.quit();
+                }),
+            ),
         );
         self.sui.run();
         self.sui.pop_layer();
@@ -81,7 +87,7 @@ impl<'game> ConsoleDriver<'game> {
         self.sui.add_fullscreen_layer(
             DummyView::new(),
         );
-        self.sui.add_layer(select);
+        self.sui.add_layer(Dialog::around(select));
         self.sui.run();
         self.sui.pop_layer();
         self.sui.pop_layer();
@@ -116,8 +122,8 @@ impl<'game> Driver<'game> for ConsoleDriver<'game> {
             "Meh, you left."
         }.to_string();
         self.sui.clear();
-        self.sui.add_fullscreen_layer(
-
+        self.sui.add_fullscreen_layer(DummyView::new());
+        self.sui.add_layer(
             Dialog::around(TextView::new(message))
                 .button("OK", |s| {
                     s.quit();

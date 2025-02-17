@@ -3,20 +3,23 @@ objects:
     name: a brass key
     description: A small brass key with intricate designs on it.
 achievements: {}
-start_scene: lockedRoom
+start_scene: theRoom
 character:
   stats:
     intelligence: 100
   inventory: []
   achievements: []
 scenes:
-  lockedRoom:
+  theRoom:
     description: |
       You are in a small room with a door to the north.
+      
+      {%- if not inventory is containing("theKey") %}
 
       There is a key on the ground.
+      {%- endif %}
     menu:
-      TryDoor:
+      TryLockedDoor:
         test: 
           not:
             inventory_contains: theKey
@@ -24,57 +27,31 @@ scenes:
         action: !AddStat
           - intelligence
           - -10
-        next_scene: lockedRoom
+        next_scene: theRoom
+      TryUnlockedDoor:
+        test: 
+          inventory_contains: theKey
+        description: Try the door.
+        action: !AddAchievement unlockedDoor
+        next_scene: winnningRoom
       PickUpKey:
         test: 
           not:
             inventory_contains: theKey
         description: Pick up the key.
-        next_scene: unlockedRoom
+        next_scene: theRoom
         action: !AddToInventory theKey
-  unlockedRoom:
-    description: |
-      You are in a small room with a door to the north.
-    menu:
-      TryDoorSmart:
-        test: 
-          and:
-            - stat_greater: 
-              - intelligence
-              - 80
-            - inventory_contains: theKey
-        description: Try the door.
-        action: !AddAchievement unlockedDoor
-        next_scene: winnningRoom
-      TryDoorDump:
-        test: 
-          and:
-            - not:
-                stat_greater: 
-                  - intelligence
-                  - 80
-            - inventory_contains: theKey
-        description: Try the door.
-        action: !AddAchievement unlockedDoor
-        next_scene: winnningRoomDumb
   winnningRoom:
     description: |
-      You have won the game!
+      {% if achievements is containing("unlockedDoor") %}You unlock the door.{% endif %}
+
+      You have won the game
+      {%- if stats.intelligence > 70 %}!
+      {%- else %}... barely.
+      {%- endif %}
     menu: 
       Quit:
         description: Quit the game.
         action: !Win
         next_scene: winnningRoom
-  winnningRoomDumb:
-    description: |
-      At last! You have won the game!
-      
-      Barely.
-    menu: 
-      Quit:
-        description: Quit the game.
-        action: !Win
-        next_scene: winnningRoom
-
-
 

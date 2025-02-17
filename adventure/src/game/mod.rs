@@ -185,6 +185,14 @@ pub struct Scene {
     pub menu: HashMap<MenuItemIdentifier, MenuItem>,
 }
 
+impl Scene {
+    pub fn render_for(&self, character: &Character) -> tera::Result<String> {
+        let mut renderer = tera::Tera::default();
+        let context = tera::Context::from_serialize(character).unwrap();
+        renderer.render_str(&self.description, &context)
+    }
+}
+
 #[derive(Debug,Deserialize,Serialize)]
 pub struct Game {
     pub objects: HashMap<ObjectIdentifier, Object>,
@@ -216,7 +224,10 @@ impl Game {
         menu.clear();
         for (id, item) in &scene.menu {
             log::debug!("Testing menu item {:?} {:?}", id, item.test);
-            if item.test.as_ref().is_some_and(|test| test.test(character)) {
+            if match item.test.as_ref() {
+                Some(test) => test.test(character),
+                None => true,
+            } {
                 log::debug!("Menu item {:?} is available", id);
                 menu.insert(id.clone(), item.description.clone());
             }
@@ -227,7 +238,7 @@ impl Game {
         progress.scene = self.start_scene.clone();
         progress.character = self.character.clone();
         let start_scene = self.scenes.get(&progress.scene).unwrap();
-        view.description = start_scene.description.clone();
+        view.description = start_scene.render_for(&progress.character).unwrap();
         self.menu_items(&progress.character, start_scene, &mut view.menu);
     }
 
@@ -238,7 +249,7 @@ impl Game {
         view: &mut SceneView) -> Result<bool, Box<dyn Error>> {
 
         let scene = self.scenes.get(&progress.scene).ok_or("Scene not found")?;
-        let menu_item = scene.menu.get(choice).ok_or("Menu item not found")?;
+        let menu_item = scene.menu.get(choice).ok_or_else(|| format!("Menu item not {:?} found", choice))?;
         menu_item.action.act(&mut progress.character);
         if progress.character.state != State::Playing {
             return Ok(false);
@@ -246,7 +257,7 @@ impl Game {
         log::debug!("Updated Character: {:?}", progress.character);
         progress.scene = menu_item.next_scene.clone();
         let scene = self.scenes.get(&progress.scene).ok_or("Scene not found")?;
-        view.description = self.scenes.get(&progress.scene).ok_or("Scene not found")?.description.clone();
+        view.description = self.scenes.get(&progress.scene).ok_or("Scene not found")?.render_for(&progress.character)?;
         self.menu_items(&progress.character, scene, &mut view.menu);
         Ok(true)
     }
