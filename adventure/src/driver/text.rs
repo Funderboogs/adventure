@@ -25,6 +25,7 @@ impl<'game> TextDriver<'game> {
                     stats: HashMap::new(),
                     inventory: HashSet::new(),
                     achievements: HashSet::new(),
+                    commodities: HashMap::new(),
                     state: State::Playing,
                 },
             },

@@ -38,6 +38,7 @@ impl<'game> ConsoleDriver<'game> {
                     stats: HashMap::new(),
                     inventory: HashSet::new(),
                     achievements: HashSet::new(),
+                    commodities: HashMap::new(),
                     state: State::Playing,
                 },
             },
@@ -66,6 +67,9 @@ impl<'game> ConsoleDriver<'game> {
                 Button::new("OK", |s| {
                     s.quit();
                 }),
+            )
+            .child(
+                DummyView::new(),
             ),
         );
         self.sui.run();
