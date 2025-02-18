@@ -5,6 +5,8 @@ locations:
       You are in a small room with a flickering, fluorescent light. The walls are painted a sickly green, and the floor is covered in a dirty, threadbare carpet.
 
       On the East wall, there is a rosette window from an old church. It depicts a saint with a halo, holding a key.
+
+      On the North wall, there is a door.
     caches:
       floor:
         objects:
@@ -28,13 +30,6 @@ character:
     commodities:
       money: 17
 scenes:
-  theHint:
-    description: |
-      You should pick up the key.
-    menu:
-      GoBack:
-        description: Try it out.
-        next_scene: theRoom
   theRoom:
     location: theRoom
     description: |
@@ -72,7 +67,7 @@ scenes:
           - !UseCommodity
             - money
             - 5
-        next_scene: theHint
+        message: "Hint: The saint in the window is holding a key."
       TryLockedDoor:
         test: 
           and:
@@ -87,6 +82,7 @@ scenes:
             - intelligence
             - -10
         next_scene: theRoom
+        message: You try the door, but it is locked.
       TryUnlockedDoor:
         test: 
           inventory_contains: theKey
@@ -94,6 +90,7 @@ scenes:
         actions:
           - !AddAchievement unlockedDoor
         next_scene: winnningRoom
+        message: Using the key, you unlock the door.
       PickUpKey:
         test: 
           not:
@@ -102,6 +99,7 @@ scenes:
         next_scene: theRoom
         actions:
           - !TakeObject ["theRoom", "floor", "theKey"]
+        message: You pick up the key.
   winnningRoom:
     description: |
       {% if achievements is containing("unlockedDoor") %}You unlock the door.{% endif %}
@@ -111,10 +109,8 @@ scenes:
       {%- else %}... barely.
       {%- endif %}
     menu: 
-      Quit:
-        description: Quit the game.
+      Win:
         actions:
           - !Win
-          - !Quit
-        next_scene: winnningRoom
+        description: Win the game.
 

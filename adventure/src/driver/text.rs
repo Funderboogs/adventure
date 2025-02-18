@@ -24,6 +24,9 @@ impl<'game> TextDriver<'game> {
         }
     }
     fn view(&mut self, view: &SceneView) {
+        if let Some(message) = &view.message {
+            println!("{}\n", message);
+        }
         println!("{}", view.description);
     }
     fn get_choice(view: &SceneView) -> Option<MenuItemIdentifier> {
@@ -48,6 +51,7 @@ impl<'game> TextDriver<'game> {
 impl<'game> Driver<'game> for TextDriver<'game> {
     fn drive(&mut self) -> Result<(), Box<dyn Error>> {
         let mut view = SceneView {
+            message: None,
             description: String::new(),
             menu: HashMap::new(),
         };

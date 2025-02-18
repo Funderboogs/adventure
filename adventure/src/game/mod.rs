@@ -118,9 +118,12 @@ impl Game {
             return Ok(false);
         }
         log::debug!("Updated Character: {:?}", progress.character);
-        progress.scene = menu_item.next_scene.clone();
+        if let Some(scene) = &menu_item.next_scene {
+             progress.scene = scene.clone();
+        };
         let scene = self.scenes.get(&progress.scene).ok_or("Scene not found")?;
         view.description = self.scenes.get(&progress.scene).ok_or("Scene not found")?.render_for(self, progress)?;
+        view.message = menu_item.message.clone();
         self.menu_items(&progress.character, scene, &mut view.menu);
         Ok(true)
     }

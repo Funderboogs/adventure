@@ -19,6 +19,11 @@ use cursive::{
         Dialog,
         DummyView,
         Panel,
+        BoxedView,
+    },
+    style::{
+        Style,
+        Effect,
     },
     Cursive, CursiveExt,
 };
@@ -42,13 +47,27 @@ impl<'game> ConsoleDriver<'game> {
         self.sui.add_fullscreen_layer(
             DummyView::new(),
         );
+        let description = match &view.message {
+            None => BoxedView::boxed(TextView::new(view.description.clone())),
+            Some(message) => BoxedView::boxed(
+                LinearLayout::vertical()
+                .child(
+                    TextView::new(message)
+                        .style(Style::from(Effect::Bold)),
+                )
+                .child(
+                    DummyView::new(),
+                )
+                .child(
+                    TextView::new(view.description.clone()),
+                ),
+            ),
+        };
         self.sui.add_layer(
             LinearLayout::vertical()
             .child(
                 Panel::new(
-                    ScrollView::new(
-                        TextView::new(view.description.clone()),
-                    ),
+                    ScrollView::new(description),
                 ),
             )
             .child(
@@ -74,7 +93,9 @@ impl<'game> ConsoleDriver<'game> {
         }
         select.add_item("Quit", MenuItemIdentifier::from("__QUIT".to_string()));
         select.set_on_submit(|s: &mut Cursive, choice: &MenuItemIdentifier| {
-            if choice != "__QUIT" {
+            if choice == "__QUIT" {
+                s.set_user_data(None::<MenuItemIdentifier>);
+            } else {
                 s.set_user_data(choice.clone());
             }
             s.quit();
@@ -94,19 +115,20 @@ impl<'game> ConsoleDriver<'game> {
 impl<'game> Driver<'game> for ConsoleDriver<'game> {
     fn drive(&mut self) -> Result<(), Box<dyn Error>> {
         let mut view = SceneView {
+            message: None,
             description: String::new(),
             menu: HashMap::new(),
         };
         self.game.initialize(&mut self.progress, &mut view);
         self.sui = Cursive::default();
-        loop {
+        'main: loop {
             self.view(&view);
             if let Some(choice) = self.get_choice(&view) {
                 if !self.game.choose(&mut self.progress, &choice, &mut view)? {
-                  break
+                  break 'main;
                 }
             } else {
-                break;
+                break 'main;
             }
         }
         let message = if self.progress.character.state == State::Won {

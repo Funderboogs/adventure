@@ -20,7 +20,10 @@ pub struct MenuItem {
     pub test: Option<Test>,
     #[serde(default)]
     pub actions: Vec<Action>,
-    pub next_scene: SceneIdentifier,
+    #[serde(default)]
+    pub next_scene: Option<SceneIdentifier>,
+    #[serde(default)]
+    pub message: Option<String>,
 }
 
 #[derive(Debug,Deserialize,Serialize)]
@@ -76,6 +79,7 @@ impl Scene {
 
 #[derive(Debug,Deserialize,Serialize)]
 pub struct SceneView {
+    pub message: Option<String>,
     pub description: String,
     pub menu: HashMap<MenuItemIdentifier, String>,
 }
