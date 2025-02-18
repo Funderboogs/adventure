@@ -7,6 +7,12 @@ locations:
       On the East wall, there is a rosette window from an old church. It depicts a saint with a halo, holding a key.
 
       On the North wall, there is a door.
+    short_description: |
+      You are in a small room.
+
+      There is a window which depicts a saint holding a key.
+
+      There is a door.
     caches:
       floor:
         objects:
@@ -35,7 +41,7 @@ scenes:
     description: |
       # You Are In {{ location.name }}
       
-      {{ location.description }}
+      {{ location_description }}
 
       You have {{inventory.commodities.money}} monies.
 

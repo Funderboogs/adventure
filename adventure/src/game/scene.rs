@@ -73,7 +73,23 @@ impl Scene {
                 game,
             }
         ).unwrap());
-        renderer.render_str(&self.description, &context)
+        let desc = if !self.short_description.is_empty() && progress.scene_history.contains(&progress.scene) {
+            &self.short_description
+        } else {
+            &self.description
+        };
+        context.insert(
+            "location_description", 
+            if self.location.is_empty() {
+                ""
+            } else if progress.location_history.contains(&self.location) && !location.short_description.is_empty() {
+                &location.short_description
+            } else {
+                &location.description
+            },
+        );
+        
+        renderer.render_str(desc, &context)
     }
 }
 

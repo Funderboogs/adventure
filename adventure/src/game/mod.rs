@@ -118,6 +118,10 @@ impl Game {
             return Ok(false);
         }
         log::debug!("Updated Character: {:?}", progress.character);
+        progress.scene_history.insert(progress.scene.clone());
+        if !scene.location.is_empty() {
+            progress.location_history.insert(scene.location.clone());
+        }
         if let Some(scene) = &menu_item.next_scene {
              progress.scene = scene.clone();
         };

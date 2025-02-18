@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap,HashSet};
 use serde::{Deserialize, Serialize};
 use super::{
     Game,
@@ -14,6 +14,8 @@ pub struct Progress {
     pub scene: SceneIdentifier,
     pub character: Character,
     pub caches: HashMap<LocationIdentifier, HashMap<CacheIdentifier, Cache>>,
+    pub scene_history: HashSet<SceneIdentifier>,
+    pub location_history: HashSet<LocationIdentifier>,
 }
 impl Progress {
     pub fn new(game: &Game) -> Self {
@@ -30,6 +32,8 @@ impl Progress {
             scene: game.start_scene.clone(),
             character: game.character.clone(),
             caches: hm,
+            scene_history: HashSet::new(),
+            location_history: HashSet::new(),
         }
     }
     pub fn take_object(&mut self, location: &LocationIdentifier, cache: &CacheIdentifier, object: &ObjectIdentifier) -> bool {
