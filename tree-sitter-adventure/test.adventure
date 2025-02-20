@@ -1,0 +1,9 @@
+GAME
+CHARACTER Bill
+LOCATIONS
+  LOCATION silentHill
+  LOCATION darkMoore
+CHAPTERS
+  CHAPTER theBeginning
+  CHAPTER theMiddle
+  CHAPTER theEnd

@@ -1,0 +1,36 @@
+{
+  "grammars": [
+    {
+      "name": "adventure",
+      "camelcase": "Adventure",
+      "scope": "source.adventure",
+      "file-types": [
+        ".adventure"
+      ],
+      "injection-regex": "^adventure$"
+    }
+  ],
+  "metadata": {
+    "version": "0.0.1",
+    "license": "All rights reserved",
+    "description": "A DSL for writing choose-your-own-adventure games",
+    "authors": [
+      {
+        "name": "Ben C. Forsberg",
+        "email": "benfrsbrg@gmail.com",
+        "url": "https://www.unquabain.com/"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/Unquabain/adventure/tree-sitter-adventure"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true
+  }
+}

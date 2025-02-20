@@ -1,0 +1,140 @@
+[
+  {
+    "type": "chapter",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "chapters",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "chapter",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "character",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "game",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "character",
+          "named": true
+        },
+        {
+          "type": "locations",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "location",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "locations",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "location",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "source_file",
+    "named": true,
+    "root": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "chapters",
+          "named": true
+        },
+        {
+          "type": "game",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "CHAPTER",
+    "named": false
+  },
+  {
+    "type": "CHAPTERS",
+    "named": false
+  },
+  {
+    "type": "CHARACTER",
+    "named": false
+  },
+  {
+    "type": "GAME",
+    "named": false
+  },
+  {
+    "type": "LOCATIONS",
+    "named": false
+  },
+  {
+    "type": "identifier",
+    "named": true
+  }
+]
