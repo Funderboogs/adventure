@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+  "adventure",
+  "tree-sitter-adventure",
+]
