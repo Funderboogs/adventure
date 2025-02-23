@@ -11,3 +11,5 @@ log = "0.4.25"
 serde = { version = "1.0.217", features = ["derive"] }
 serde_yaml = "0.9.34"
 tera = "1.20.0"
+tree-sitter = "0.25.2"
+tree-sitter-adventure = { path = "../tree-sitter-adventure" }

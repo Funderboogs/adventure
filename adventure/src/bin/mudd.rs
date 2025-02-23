@@ -4,10 +4,13 @@ use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 struct Args {
-    #[clap(short, long)]
+    #[clap(short='y', long)]
     game_yaml: Option<PathBuf>,
 
-    #[clap(short, long)]
+    #[clap(short='d', long)]
+    game_dsl: Option<PathBuf>,
+
+    #[clap(short='g', long)]
     debug: bool,
 }
 
@@ -32,6 +35,31 @@ fn main() {
             let mut driver = ConsoleDriver::new(&game);
             driver.drive().expect("Failed to run game");
         }
+    } else if let Some(game_dsl) = args.game_dsl {
+        use tree_sitter::Parser;
+        use std::io::read_to_string;
+        let mut parser = Parser::new();
+        parser.set_language(&tree_sitter_adventure::LANGUAGE.into()).expect("Failed to load language");
+        let file = std::fs::File::open(game_dsl).expect("Failed to open game file");
+        let scode = read_to_string(file).expect("Failed to read game file");
+        let code = scode.as_bytes();
+        let tree = parser.parse(code, None).expect("Failed to parse game file");
+        let mut cursor = tree.walk();
+        cursor.goto_first_child();
+        println!("{:?}", &cursor.node());
+        cursor.goto_first_child();
+        while !cursor.node().is_named() {
+            cursor.goto_next_sibling();
+        }
+        println!("{:?}", &cursor.node());
+        cursor.goto_first_child();
+        while !cursor.node().is_named() {
+            cursor.goto_next_sibling();
+        }
+        println!("The character's name is {}", &cursor.node().utf8_text(code).unwrap());
+
+
+
     } else {
         eprintln!("No game file provided");
     }
